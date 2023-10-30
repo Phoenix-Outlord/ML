@@ -1,0 +1,328 @@
+# importing libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.model_selection import train_test_split
+
+
+
+df = pd.read_csv('/content/adult.csv')
+df.head()
+
+
+
+df.describe()
+
+
+
+
+df.isna().sum()
+
+
+
+
+df.loc[df.duplicated() == True]
+
+
+df = df.drop_duplicates()
+
+
+
+df.loc[df.duplicated() == True]
+
+
+
+df['age'].describe()
+
+
+
+# Age
+plt.figure(figsize=(16, 8))
+sns.set_theme(style="darkgrid")
+sns.set_palette("magma")
+sns.histplot(data=df, x='age', hue='income', bins=20, multiple='stack')
+plt.xlabel('Age')
+plt.ylabel('Count')
+plt.title('Age Distribution')
+plt.show()
+
+
+
+
+# workclass
+df.groupby('workclass').size()
+
+
+
+
+workclass_unknown = df.loc[df['workclass'] == '?']
+print('**age distribution for workclass "?"** \n', workclass_unknown['age'].describe())
+plt.figure(figsize=(16, 8))
+plt.title('age distribution for workclass "?"')
+plt.hist(workclass_unknown['age'], bins=20)
+sns.histplot(data=df.loc[df['workclass'] == '?'], x='age', hue='income', bins=20, multiple='stack')
+
+
+
+
+
+print(df.query('age < 20').groupby('workclass').size())
+print(df.query('age > 20 and age < 60').groupby('workclass').size())
+print(df.query('age > 60').groupby('workclass').size())
+
+
+
+df.loc[df['workclass'] == '?', 'workclass'] = 'Private'
+df.loc[df['workclass'] == '?' ]
+
+
+
+plt.figure(figsize=(16, 8))
+sns.histplot(data=df, x='workclass', hue='income', multiple='stack')
+plt.xlabel('Workclass')
+plt.title('Workclass')
+
+
+df.groupby(df['workclass']).size()
+
+
+df.head()
+
+
+
+# Final Weight
+plt.figure(figsize=(16, 8))
+sns.histplot(x='fnlwgt', data=df, hue='income', multiple='stack')
+plt.title('Final Weight distribution')
+plt.xlabel('Final Weight')
+
+
+
+
+# Education
+df.groupby('education').size()
+
+
+
+
+
+plt.figure(figsize=(16, 8))
+plt.pie(df.groupby('education').size(), labels=df.groupby('education').size().index, autopct='%1.1f%%')
+
+
+
+
+plt.figure(figsize=(16, 8))
+sns.countplot(x='education', data=df, hue='income')
+
+
+
+
+# Education Number
+df.groupby('education.num').size()
+
+
+df['education.num'].describe()
+
+
+
+plt.figure(figsize=(16, 8))
+sns.countplot(x='education.num', data=df, hue='income')
+
+
+
+# marital status
+print(df.groupby('marital.status').size())
+plt.figure(figsize=(16, 8))
+sns.countplot(data=df, x='marital.status', hue='income')
+
+
+
+
+# Occupation
+print(df.groupby('occupation').size())
+plt.figure(figsize=(16, 12))
+plt.pie(df.groupby('occupation').size(), labels=df.groupby('occupation').size().index, autopct='%1.1f%%')
+plt.title('Occupation Distribution')
+
+
+
+plt.figure(figsize=(24, 8))
+sns.histplot(data=df, x='occupation', hue='income', multiple='stack', alpha=0.5)
+plt.xlabel('Occupation')
+plt.title('Occupation Distribution')
+
+
+
+df.drop(df.loc[df['occupation'] == '?'].index, inplace=True)
+
+
+
+plt.figure(figsize=(24, 8))
+sns.histplot(data=df, x='occupation', hue='income', multiple='stack')
+plt.xlabel('Occupation')
+plt.title('Occupation Distribution')
+
+
+
+
+# Relationship
+print(df.groupby('relationship').size())
+plt.figure(figsize=(16, 8))
+sns.histplot(data=df, x='relationship', hue='income', multiple='stack')
+
+
+
+
+
+# Race and Sex
+plt.figure(figsize=(16, 8))
+print(df.groupby(df.race).size())
+sns.countplot(data=df, x='race', hue='income')
+plt.title('Race x Income')
+plt.show()
+plt.figure(figsize=(16, 8))
+print(df.groupby(df.sex).size())
+sns.countplot(data=df, x='sex', hue='income')
+plt.title('Sex x Income')
+
+
+# Capital Gain & Capital Loss
+print('**** capital gain **** \n ', df.groupby('capital.gain').size(), '\n')
+print('**** capital loss **** \n ', df.groupby('capital.loss').size(), '\n')
+
+
+
+
+
+plt.figure(figsize=(16, 8))
+sns.histplot(x='capital.gain', data=df, hue='income', multiple='stack')
+plt.title('Capital Gain distribution')
+plt.xlabel('Capital Gain')
+plt.show()
+plt.figure(figsize=(16, 8))
+sns.histplot(x='capital.loss', data=df, hue='income', multiple='stack')
+plt.title('Capital Loss distribution')
+plt.xlabel('Capital Loss')
+
+
+
+
+
+df.head()
+
+
+
+# Hours per week
+df.groupby('hours.per.week').size()
+
+
+
+df = df.drop(columns=['hours.per.week'])
+
+
+
+
+
+# Native Country
+df.groupby('native.country').size()
+
+
+
+plt.figure(figsize=(16, 8))
+plt.pie(df.groupby('native.country').size(), labels=df.groupby('native.country').size().index, autopct='%1.1f%%')
+
+
+
+label_encoder = LabelEncoder()
+categorical_columns = ['income', 'workclass', 'education', 'marital.status', 'occupation', 'relationship', 'race', 'sex', 'native.country']
+df[categorical_columns] = df[categorical_columns].apply(label_encoder.fit_transform)
+
+
+df
+
+
+
+
+x_train, x_test, y_train, y_test = train_test_split(df.drop(columns=['income']), df['income'], test_size=0.2, random_state=42)
+
+
+
+
+scaler = StandardScaler()
+x_train = scaler.fit_transform(x_train)
+x_test = scaler.transform(x_test)
+
+
+
+
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+rfc = RandomForestClassifier()
+rfc.fit(x_train, y_train)
+y_pred = rfc.predict(x_test)
+print('**** ACCURACY_SCORE **** \n\n', accuracy_score(y_test, y_pred), '\n')
+print('**** CLASSIFICATION_REPORT **** \n\n', classification_report(y_test, y_pred), '\n')
+print('**** CONFUSION MATRIX ****')
+sns.heatmap(confusion_matrix(y_test, y_pred), annot=True, fmt='d')
+
+
+
+
+from xgboost import XGBClassifier
+
+xgb = XGBClassifier()
+xgb.fit(x_train, y_train)
+y_pred = xgb.predict(x_test)
+print('**** ACCURACY_SCORE **** \n\n', accuracy_score(y_test, y_pred), '\n')
+print('**** CLASSIFICATION_REPORT **** \n\n', classification_report(y_test, y_pred), '\n')
+print('**** CONFUSION MATRIX ****')
+sns.heatmap(confusion_matrix(y_test, y_pred), annot=True, fmt='d')
+
+
+
+
+from sklearn. ensemble import GradientBoostingClassifier
+
+#Training the model with gradient boosting
+gbc = GradientBoostingClassifier(
+    learning_rate=0.1,
+    n_estimators = 500,
+    max_depth=5,
+    subsample=0.9,
+    min_samples_split = 100,
+    max_features='sqrt',
+    random_state=10)
+gbc.fit(x_train,y_train)
+
+# Predictions
+y_pred_gbc =gbc.predict (x_test)
+print("Accuracy: ",accuracy_score (y_test, y_pred_gbc))
+print('**** CLASSIFICATION_REPORT **** \n\n', classification_report(y_test, y_pred_gbc), '\n')
+print('**** CONFUSION MATRIX ****')
+sns.heatmap(confusion_matrix(y_test, y_pred_gbc), annot=True, fmt='d')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
